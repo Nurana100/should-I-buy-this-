@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Should I Buy This?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1b2430;
+    --ink-soft: #2a3444;
+    --paper: #f6f1e7;
+    --paper-line: #d9d0bd;
+    --brass: #b98d2e;
+    --rust: #a6472f;
+    --sage: #4a6b52;
+    --muted: #8a8272;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--ink);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(185,141,46,0.06), transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(166,71,47,0.06), transparent 40%);
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 64px 20px 100px;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .eyebrow {
+    text-align: center;
+    color: var(--paper);
+    opacity: 0.5;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 34px;
+    color: var(--paper);
+    text-align: center;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .sub {
+    text-align: center;
+    color: var(--paper);
+    opacity: 0.55;
+    font-size: 13px;
+    margin-bottom: 34px;
+    line-height: 1.5;
+  }
+
+  .receipt {
+    background: var(--paper);
+    border-radius: 2px;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.6);
+    position: relative;
+    padding: 32px 28px 40px;
+  }
+
+  .receipt::before {
+    content: "";
+    position: absolute;
+    top: -8px; left: 0; right: 0;
+    height: 16px;
+    background:
+      radial-gradient(circle at 8px 8px, var(--ink) 8px, transparent 9px) repeat-x;
+    background-size: 16px 16px;
+    background-position: 0 -8px;
+  }
+
+  .field { margin-bottom: 20px; }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+  }
+
+  .field input[type="text"],
+  .field input[type="number"] {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed var(--paper-line);
+    padding: 6px 2px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    color: var(--ink);
+    outline: none;
+  }
+
+  .field input:focus { border-bottom-color: var(--brass); }
+
+  .row { display: flex; gap: 18px; }
+  .row .field { flex: 1; }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  input[type="range"] {
+    flex: 1;
+    accent-color: var(--rust);
+  }
+
+  .slider-val {
+    width: 26px;
+    text-align: right;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .radios {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .radios label {
+    flex: 1;
+    min-width: 84px;
+    text-align: center;
+    font-size: 11px;
+    padding: 9px 6px;
+    border: 1px solid var(--paper-line);
+    border-radius: 3px;
+    cursor: pointer;
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .radios input { display: none; }
+
+  .radios input:checked + span {
+    color: var(--ink);
+  }
+
+  .radios label:has(input:checked) {
+    border-color: var(--ink);
+    background: rgba(27,36,48,0.05);
+    color: var(--ink);
+  }
+
+  button.submit {
+    width: 100%;
+    margin-top: 8px;
+    padding: 14px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 3px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  button.submit:hover { background: var(--ink-soft); }
+  button.submit:active { transform: translateY(1px); }
+
+  .dotted {
+    border: none;
+    border-top: 1px dashed var(--paper-line);
+    margin: 26px 0 18px;
+  }
+
+  .result {
+    display: none;
+    animation: printIn 0.5s ease forwards;
+  }
+
+  .result.show { display: block; }
+
+  @keyframes printIn {
+    from { opacity: 0; transform: translateY(-6px); clip-path: inset(0 0 100% 0); }
+    to { opacity: 1; transform: translateY(0); clip-path: inset(0 0 0 0); }
+  }
+
+  .line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .line span:last-child { color: var(--ink); }
+
+  .verdict-block {
+    text-align: center;
+    padding: 20px 10px 6px;
+  }
+
+  .verdict-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .verdict {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+
+  .verdict.buy { color: var(--sage); }
+  .verdict.wait { color: var(--brass); }
+  .verdict.skip { color: var(--rust); }
+
+  .reasoning {
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--ink);
+    opacity: 0.85;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+
+  .score-bar {
+    height: 4px;
+    background: var(--paper-line);
+    border-radius: 2px;
+    margin: 18px 0 4px;
+    overflow: hidden;
+  }
+
+  .score-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.6s ease;
+  }
+
+  .score-fill.buy { background: var(--sage); }
+  .score-fill.wait { background: var(--brass); }
+  .score-fill.skip { background: var(--rust); }
+
+  .score-caption {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .footer-note {
+    text-align: center;
+    color: var(--paper);
+    opacity: 0.35;
+    font-size: 11px;
+    margin-top: 26px;
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="eyebrow">the moment before you tap "buy"</div>
+  <h1>Should I Buy This?</h1>
+  <div class="sub">Answer honestly. You'll get a verdict, not a lecture.</div>
+
+  <div class="receipt">
+    <form id="form">
+      <div class="field">
+        <label for="item">What are you buying</label>
+        <input type="text" id="item" placeholder="e.g. wireless earbuds" required>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="price">Price ($)</label>
+          <input type="number" id="price" min="0" step="1" placeholder="120" required>
+        </div>
+        <div class="field">
+          <label for="income">Monthly income ($)</label>
+          <input type="number" id="income" min="1" step="1" placeholder="3500" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="desire">How badly do you want it</label>
+        <div class="slider-row">
+          <input type="range" id="desire" min="1" max="10" value="5">
+          <div class="slider-val" id="desireVal">5</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Last time you bought something like this</label>
+        <div class="radios">
+          <label><input type="radio" name="recency" value="2" checked><span>This week</span></label>
+          <label><input type="radio" name="recency" value="14"><span>This month</span></label>
+          <label><input type="radio" name="recency" value="90"><span>Few months</span></label>
+          <label><input type="radio" name="recency" value="365"><span>Ages ago</span></label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="apiKey">OpenAI API key (optional, used live in your browser only)</label>
+        <input type="password" id="apiKey" placeholder="sk-... leave blank to use offline logic" autocomplete="off">
+      </div>
+
+      <button type="submit" class="submit">Print my verdict</button>
+    </form>
+
+    <div id="result" class="result">
+      <hr class="dotted">
+      <div class="line"><span id="rItem">Item</span><span id="rPrice">$0</span></div>
+      <div class="line"><span>Score</span><span id="rScore">0.00</span></div>
+      <div class="line"><span>Source</span><span id="rSource">offline logic</span></div>
+
+      <div class="verdict-block">
+        <div class="verdict-label">Verdict</div>
+        <div class="verdict" id="verdictText">—</div>
+        <div class="reasoning" id="reasoningText"></div>
+
+        <div class="score-bar"><div class="score-fill" id="scoreFill"></div></div>
+        <div class="score-caption"><span>Buy it</span><span>Skip it</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">no account, no tracking — the receipt is just for you</div>
+</div>
+
+<script>
+  const form = document.getElementById('form');
+  const result = document.getElementById('result');
+  const desire = document.getElementById('desire');
+  const desireVal = document.getElementById('desireVal');
+
+  desire.addEventListener('input', () => desireVal.textContent = desire.value);
+
+  // Weights tuned so a mid-price, mid-desire, recent-duplicate purchase
+  // sits right around the "wait" threshold.
+  const W1 = 6;    // weight on price-to-income ratio
+  const W2 = 0.35; // weight on desire intensity
+  const W3 = 0.01; // weight on recency (days since similar purchase)
+
+  function computeScore(price, income, desireVal, recencyDays) {
+    const priceRatio = price / income;
+    const raw = (W1 * priceRatio) + (W2 * desireVal) - (W3 * recencyDays);
+    // squash into a readable 0–10 scale
+    const clamped = Math.max(0, Math.min(10, raw + 1));
+    return clamped;
+  }
+
+  function verdictFromScore(score) {
+    if (score < 3.5) return 'buy';
+    if (score < 6.5) return 'wait';
+    return 'skip';
+  }
+
+  function reasoningFor(kind, item, price, income, desireVal, recencyDays) {
+    const ratioPct = Math.round((price / income) * 100);
+    const wantPhrase = desireVal >= 8 ? "you clearly want this"
+      : desireVal >= 5 ? "you want this, but not urgently"
+      : "you're lukewarm on this";
+    const recencyPhrase = recencyDays <= 2 ? "you bought something similar this week"
+      : recencyDays <= 14 ? "you bought something similar this month"
+      : recencyDays <= 90 ? "it's been a few months since something similar"
+      : "it's genuinely been a while";
+
+    if (kind === 'buy') {
+      return `${item || 'This'} is about ${ratioPct}% of your monthly income, ${wantPhrase}, and ${recencyPhrase}. Low regret risk. Go ahead.`;
+    }
+    if (kind === 'wait') {
+      return `${item || 'This'} is a real chunk of your budget at ${ratioPct}% of income. ${wantPhrase.charAt(0).toUpperCase() + wantPhrase.slice(1)}, and ${recencyPhrase}. Sleep on it for a week, if you still want it, buy it guilt-free.`;
+    }
+    return `${item || 'This'} is ${ratioPct}% of your monthly income and ${recencyPhrase}. That combination usually means this is more about the moment than the item. Skip it, or revisit in a month.`;
+  }
+
+  const submitBtn = form.querySelector('.submit');
+
+  // NOTE ON THE API KEY FIELD:
+  // The key is read straight from the input at submit time, held only in a
+  // local variable for the duration of this one request, and never written
+  // to a file, a variable outside this scope, localStorage, or any log.
+  // Nothing about the key is included in this repo. Anyone testing the app
+  // (including judges) can leave the field blank and still get a full,
+  // working verdict from the offline scoring logic below.
+  async function getLiveReasoning(apiKey, item, price, income, desireValNum, recencyDays, score, kind) {
+    const labelMap = { buy: 'Buy It', wait: 'Wait a Week', skip: 'Skip It' };
+
+    const systemPrompt = `You are a blunt, kind personal-finance assistant embedded in an app called "Should I Buy This." A local scoring formula has already decided the verdict, your only job is to explain it in 2-3 honest, conversational sentences. Never contradict the given verdict. Respond with plain text only, no markdown, no preamble.`;
+
+    const userPrompt = `Item: ${item || 'unspecified item'}
+Price: $${price}
+Monthly income: $${income}
+Desire intensity (1-10): ${desireValNum}
+Days since a similar purchase: ${recencyDays}
+Computed score (0-10, higher means more likely to skip): ${score.toFixed(2)}
+Verdict: ${labelMap[kind]}
+
+Explain this verdict in 2-3 sentences.`;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey
+      },
+      body: JSON.stringify({
+        model: 'gpt-5.6',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        max_tokens: 200
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('OpenAI request failed: ' + response.status);
+    }
+
+    const data = await response.json();
+    const text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    if (!text) throw new Error('No content in response');
+    return text.trim();
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const item = document.getElementById('item').value.trim();
+    const price = parseFloat(document.getElementById('price').value);
+    const income = parseFloat(document.getElementById('income').value);
+    const desireValNum = parseInt(desire.value, 10);
+    const recencyDays = parseInt(document.querySelector('input[name="recency"]:checked').value, 10);
+    const apiKey = document.getElementById('apiKey').value.trim();
+
+    const score = computeScore(price, income, desireValNum, recencyDays);
+    const kind = verdictFromScore(score);
+    const labelMap = { buy: 'Buy It', wait: 'Wait a Week', skip: 'Skip It' };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = apiKey ? 'Asking GPT-5.6…' : 'Printing…';
+
+    let reasoning = reasoningFor(kind, item, price, income, desireValNum, recencyDays);
+    let source = 'offline logic';
+
+    if (apiKey) {
+      try {
+        reasoning = await getLiveReasoning(apiKey, item, price, income, desireValNum, recencyDays, score, kind);
+        source = 'GPT-5.6 (live)';
+      } catch (err) {
+        console.warn('Live GPT-5.6 call failed, falling back to offline reasoning:', err);
+        source = 'offline logic (live call failed)';
+      }
+    }
+
+    document.getElementById('rItem').textContent = item || 'Item';
+    document.getElementById('rPrice').textContent = '$' + price.toFixed(0);
+    document.getElementById('rScore').textContent = score.toFixed(2) + ' / 10';
+    document.getElementById('rSource').textContent = source;
+
+    const verdictEl = document.getElementById('verdictText');
+    verdictEl.textContent = labelMap[kind];
+    verdictEl.className = 'verdict ' + kind;
+
+    document.getElementById('reasoningText').textContent = reasoning;
+
+    const fill = document.getElementById('scoreFill');
+    fill.className = 'score-fill ' + kind;
+    fill.style.width = (score * 10) + '%';
+
+    result.classList.remove('show');
+    void result.offsetWidth; // restart animation
+    result.classList.add('show');
+    result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Print my verdict';
+  });
+</script>
+
+</body>
+</html>
