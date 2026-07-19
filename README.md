@@ -1,61 +1,56 @@
-# Should I Buy This?
+Should I Buy This?
 
-A privacy-friendly purchase decision helper created for OpenAI Build Week’s **Apps for Your Life** track. It turns a moment of spending uncertainty into a kind, practical next step: **Buy it**, **Wait a week**, or **Skip it**.
+## The idea
+
+I built **Should I Buy This?** for OpenAI Build Week, in the Apps for Your Life track.
+
+It is for the very normal moment when you are about to buy something and think: *Do I actually want this, or am I just excited right now?*
+
+You enter the item, price, montly income, how much you want it, and when you last bought something similar. The app gives you one of three answers:
+
+- **Buy it**
+- **Wait a week**
+- **Skip it**
+
+It also explains the answer in plain language. The goal is not to make people feel bad about spending. It is to help them make a choice they will feel good about later.
+
+## What it does
+
+- Checks that the price and income make sense before giving an answer.
+- Gives a useful answer even without an internet connection or API key.
+- Optionally uses GPT-5.6 as a second opinion. GPT sees the actual answers and helps choose the verdict; it is not only writing an explanation after the fact.
+- Saves decisions in the browser, so users can look back on them later.
+- Lets users mark whether they ended up buying the item.
+- Adds a revisit date to “Wait a week” decisions. This is the cooling-off tracker: if you still want it a week later, you can reconsider with a clearer head.
+
+## Why I made it this way
+
+There are two ways the app can decide:
+
+1. A simple local calculation looks at the price as a share of monthly income, the user’s desire rating, and how recently they bought something similar.
+2. If the user chooses to add an API key, GPT-5.6 looks at the same raw information and makes a more nuanced recommendation.
+
+I kept the local calculation because it means the app always works. It also gives the AI some sensible boundaries. For example, the app will not recommend “Buy it” for something that costs a whole month of take-home income.
+
+The AI option makes the answer feel less like a rigid calculator. The offline option keeps it fast, private, free to try, and reliable if the AI request fails.
+
+## Privacy
+
+Purchase history is saved with `localStorage`, which means it stays in the user’s own browser. There is no account and no database.
+
+The optional API key is only kept in the current browser tab by the app. For a real public version, I would move the OpenAI request to a small server-side endpoint so no API key is ever exposed in the browser.
 
 ## Run it
 
-Open `index.html` in a browser. No installation or build step is needed.
+There is no installation needed. Download or clone the project, then open `index.html` in a browser.
 
-> The optional GPT feature makes a browser request to the OpenAI API using a key pasted for the current tab. This is suitable only for a personal prototype. A real deployment must send requests through a server-side or serverless endpoint so an API key is never exposed in browser code.
+The files are:
 
-## Product and engineering decisions
+- `index.html` — the page structure
+- `styles.css` — the design and responsive layout
+- `app.js` — the decision logic, history, validation, and optional AI call
 
-### Why separate HTML, CSS, and JavaScript?
+## What I would add next
 
-The original concept is a single-page app, but its responsibilities have grown: accessible form markup, a polished responsive interface, local data management, validation, and AI requests. Splitting the app into three small files keeps each responsibility clear:
+The next version could let someone set a savings goal or a monthly “fun money” budget. Then the recommendation could consider what the purchase would mean for a goal they actually care about, not only their income.
 
-- `index.html` is the accessible page structure and user-facing copy.
-- `styles.css` is the visual system and responsive layout.
-- `app.js` is the decision logic, browser storage, and optional AI integration.
-
-This makes future changes safer for a beginner: changing a color cannot accidentally break the decision formula, and adding a new history field has one clear place to live.
-
-### Decision model: hybrid, not AI-only
-
-The app has two layers.
-
-1. **Deterministic budget signals** calculate the item’s share of monthly income, an affordability signal, the user’s stated desire, and the recency of comparable purchases. These are consistent, inspectable, and available offline.
-2. **GPT-5.6, when enabled**, receives the raw inputs and these signals. It selects the verdict, score, explanation, considerations, and next step in structured JSON. It is therefore part of the decision logic—not just a text writer added after a verdict.
-
-The app still applies one narrow guardrail: an item costing at least a full month of take-home income cannot receive a final “Buy it” verdict. If the live call fails, the deterministic layer gives a usable offline decision and explains that fallback on the page.
-
-This tradeoff is intentional. An AI-only solution feels more personal and can weigh context with nuance, but it can vary from request to request, cost money, fail because of connectivity, and produce advice that is harder to audit. A formula-only solution is predictable and free but can feel rigid. The hybrid model offers a thoughtful answer while retaining dependable constraints.
-
-### Validation and resilience
-
-Before any decision, the app checks that:
-
-- the item is named;
-- price and monthly take-home income are valid numbers above zero; and
-- values are within a deliberately generous, realistic range.
-
-Errors appear in the page beside the form and focus moves to the field needing attention. A failed AI request does not lose the decision: the app switches to the offline guide.
-
-### Purchase history and privacy
-
-Every decision is saved automatically in `localStorage`, which means it remains on the same browser/device after a refresh but is not sent to a database. Each saved entry includes the purchase inputs, verdict, explanation, decision date, and an editable outcome: bought, did not buy, or still pending. Users can clear their history at any time.
-
-### Polished-product feature: cooling-off tracker
-
-“Wait a week” decisions get an automatic revisit date. The purchase history shows how many days remain or signals when it is ready to reconsider. This transforms the project from a one-time calculator into a small spending habit: it gives impulsive wants time to either prove their value or fade.
-
-For a hackathon, this supports:
-
-- **Design:** a calm, responsive interface with clear states and accessible controls.
-- **Technical implementation:** structured AI output, resilient fallback behavior, and browser persistence.
-- **Potential impact:** encourages intentional spending without shaming users.
-- **Quality of idea:** it closes the loop by tracking what users actually did after the recommendation.
-
-## Suggested next production step
-
-Add a tiny serverless function (for example, a Vercel or Cloudflare endpoint) that holds `OPENAI_API_KEY` as a secret and calls the Responses API. Then replace the direct browser `fetch` in `app.js` with a request to that endpoint. This preserves the exact product behavior while making it safe to deploy publicly.
